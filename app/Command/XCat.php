@@ -9,6 +9,7 @@ namespace App\Command;
 
 use App\Models\User;
 use App\Models\Relay;
+use App\Services\Gateway\ChenPay;
 use App\Utils\Hash;
 use App\Utils\Tools;
 use App\Services\Config;
@@ -28,8 +29,10 @@ class XCat
     public function boot()
     {
         switch ($this->argv[1]) {
-            case("install"):
-                return $this->install();
+            case("alipay"):
+                return (new ChenPay())->AliPayListen();
+            case("wxpay"):
+                return (new ChenPay())->WxPayListen();
             case("createAdmin"):
                 return $this->createAdmin();
             case("resetTraffic"):
@@ -62,14 +65,14 @@ class XCat
                     return Job::syncnode();
             case("syncnasnode"):
                     return Job::syncnasnode();
+			case("detectGFW"):
+				return Job::detectGFW();
             case("syncnas"):
                     return SyncRadius::syncnas();
             case("dailyjob"):
                 return Job::DailyJob();
             case("checkjob"):
                 return Job::CheckJob();
-            case("syncduoshuo"):
-                return Job::SyncDuoshuo();
             case("userga"):
                 return Job::UserGa();
             case("backup"):
@@ -84,9 +87,9 @@ class XCat
                 return $this->resetPort();
 	        case("resetAllPort"):
                 return $this->resetAllPort();
-			case("migrateConfig"):
-			    return $this->migrateConfig();
-            default:
+			case("update"):
+			    return Update::update();
+			default:
                 return $this->defaultAction();
         }
     }
@@ -103,7 +106,7 @@ class XCat
 		echo("  initdownload - 下载 SSR 程序至服务器".PHP_EOL);
 		echo("  initQQWry - 下载 IP 解析库".PHP_EOL);
 		echo("  resetTraffic - 重置所有用户流量".PHP_EOL);
-		echo("  migrateConfig - 将配置迁移至新配置".PHP_EOL);
+		echo("  update - 更新并迁移配置".PHP_EOL);
     }
 
 	public function resetPort()
@@ -136,80 +139,6 @@ class XCat
         }
     }
 
-	public function migrateConfig()
-	{
-	    global $System_Config;
-	    $copy_result=copy(BASE_PATH."/config/.config.php",BASE_PATH."/config/.config.php.bak");
-		if($copy_result==true){
-			echo('备份成功！'.PHP_EOL);
-		}
-		else{
-			echo('备份失败！迁移终止'.PHP_EOL);
-			return false;
-		}
-
-		//将旧config迁移到新config上
-		$config_old=file_get_contents(BASE_PATH."/config/.config.php");
-		$config_new=file_get_contents(BASE_PATH."/config/.config.php.example");
-		$migrated=array();
-		foreach($System_Config as $key => $value_reserve){
-			if($key=='config_migrate_notice'){
-				continue;
-			}
-
-			$regex='/System_Config\[\''.$key.'\'\].*?;/s';
-			$matches_new=array();
-			preg_match($regex,$config_new,$matches_new);
-			if(isset($matches_new[0])==false){
-				echo('配置项：'.$key.' 未能在新config文件中找到，可能已被更名或废弃'.PHP_EOL);
-				continue;
-			}
-
-			$matches_old=array();
-			preg_match($regex,$config_old,$matches_old);
-
-			$config_new=str_replace($matches_new[0],$matches_old[0],$config_new);
-			array_push($migrated,'System_Config[\''.$key.'\']');
-		}
-
-		//检查新增了哪些config
-		$regex_new='/System_Config\[\'.*?\'\]/s';
-		$matches_new_all=array();
-		preg_match_all($regex_new,$config_new,$matches_new_all);
-		$new_all=$matches_new_all[0];
-		$differences=array_diff($new_all,$migrated);
-		foreach($differences as $difference){
-			//裁去首位
-			$difference=substr($difference,15);
-			$difference=substr($difference, 0, -2);
-
-			echo('新增配置项：'.$difference.PHP_EOL);
-		}
-
-		//输出notice
-		$regex_notice='/System_Config\[\'config_migrate_notice\'\].*?(?=\';)/s';
-		$matches_notice=array();
-		preg_match($regex_notice,$config_new,$matches_notice);
-		$notice_new=$matches_notice[0];
-		$notice_new=substr(
-			$notice_new,strpos(
-				$notice_new,'\'',strpos($notice_new,'=') //查找'='之后的第一个'\''，然后substr其后面的notice
-			)+1
-		);
-		echo('以下是迁移附注：');
-		if(isset($System_Config['config_migrate_notice'])==true){
-		    if($System_Config['config_migrate_notice']!=$notice_new){
-			    echo($notice_new);
-			}
-		}
-		else{
-			echo($notice_new);
-		}
-
-		file_put_contents(BASE_PATH."/config/.config.php",$config_new);
-		echo(PHP_EOL.'迁移完成！'.PHP_EOL);
-	}
-
     public function cleanRelayRule()
     {
         $rules = Relay::all();
@@ -230,11 +159,6 @@ class XCat
         }
     }
 
-    public function install()
-    {
-        echo "x cat will install ss-panel v3...../n";
-    }
-
     public function initdownload()
     {
         system('git clone https://github.com/xcxnig/ssr-download.git '.BASE_PATH."/public/ssr-download/", $ret);
@@ -243,15 +167,13 @@ class XCat
 
     public function createAdmin()
     {
-        $this->initQQWry();
-        $this->initdownload();
         echo "add admin/ 创建管理员帐号.....";
         // ask for input
         fwrite(STDOUT, "Enter your email/输入管理员邮箱: ");
         // get input
         $email = trim(fgets(STDIN));
         // write input back
-        fwrite(STDOUT, "Enter password for: $email / 为 $email 添加密码 ");
+        fwrite(STDOUT, "Enter password for: $email / 为 $email 添加密码: ");
         $passwd = trim(fgets(STDIN));
         echo "Email: $email, Password: $passwd! ";
         fwrite(STDOUT, "Press [Y] to create admin..... 按下[Y]确认来确认创建管理员账户..... \n");

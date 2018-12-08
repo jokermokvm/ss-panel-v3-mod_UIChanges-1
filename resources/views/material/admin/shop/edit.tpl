@@ -20,21 +20,21 @@
 					<div class="card">
 						<div class="card-main">
 							<div class="card-inner">
-								<p>可填单个或者多个参数，多个参数时会自动组合成套餐</p>
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="name">名称</label>
-									<input class="form-control" id="name" type="text" value="{$shop->name}">
+									<input class="form-control maxwidth-edit" id="name" type="text" value="{$shop->name}">
 								</div>
 
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="price">价格</label>
-									<input class="form-control" id="price" type="text" value="{$shop->price}">
+									<input class="form-control maxwidth-edit" id="price" type="text" value="{$shop->price}">
 								</div>
 
 								<div class="form-group form-group-label">
-									<label class="floating-label" for="auto_renew">自动续订天数（0为不允许自动续订，其他为到了那么多天之后就会自动从用户的账户上划钱抵扣）</label>
-									<input class="form-control" id="auto_renew" type="text" value="{$shop->auto_renew}">
+									<label class="floating-label" for="auto_renew">自动续订天数</label>
+									<input class="form-control maxwidth-edit" id="auto_renew" type="text" value="{$shop->auto_renew}">
+									<p class="form-control-guide">0为不允许自动续订，其他为到了那么多天之后就会自动从用户的账户上划钱抵扣</p>
 								</div>
 
 
@@ -49,7 +49,7 @@
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="bandwidth">流量（GB）</label>
-									<input class="form-control" id="bandwidth" type="text" value="{$shop->bandwidth()}">
+									<input class="form-control maxwidth-edit" id="bandwidth" type="text" value="{$shop->bandwidth()}">
 								</div>
 
 
@@ -72,7 +72,7 @@
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="expire">账户有效期天数</label>
-									<input class="form-control" id="expire" type="text" value="{$shop->expire()}">
+									<input class="form-control maxwidth-edit" id="expire" type="text" value="{$shop->expire()}">
 								</div>
 							</div>
 						</div>
@@ -84,12 +84,12 @@
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="class">等级</label>
-									<input class="form-control" id="class" type="text" value="{$shop->user_class()}">
+									<input class="form-control maxwidth-edit" id="class" type="text" value="{$shop->user_class()}">
 								</div>
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="class_expire">等级有效期天数</label>
-									<input class="form-control" id="class_expire" type="text" value="{$shop->class_expire()}">
+									<input class="form-control maxwidth-edit" id="class_expire" type="text" value="{$shop->class_expire()}">
 								</div>
 							</div>
 						</div>
@@ -100,18 +100,18 @@
 							<div class="card-inner">
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="reset_exp">多少天内</label>
-									<input class="form-control" id="reset_exp" type="number" value="{$shop->reset_exp()}">
+									<input class="form-control maxwidth-edit" id="reset_exp" type="number" value="{$shop->reset_exp()}">
 								</div>
 
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="reset">每多少天</label>
-									<input class="form-control" id="reset" type="number" value="{$shop->reset()}">
+									<input class="form-control maxwidth-edit" id="reset" type="number" value="{$shop->reset()}">
 								</div>
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="reset_value">重置流量为多少G</label>
-									<input class="form-control" id="reset_value" type="number" value="{$shop->reset_value()}">
+									<input class="form-control maxwidth-edit" id="reset_value" type="number" value="{$shop->reset_value()}">
 								</div>
 							</div>
 						</div>
@@ -125,18 +125,30 @@
 							<div class="card-inner">
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="speedlimit">端口限速</label>
-									<input class="form-control" id="speedlimit" type="number" value="{$shop->speedlimit()}">
+									<input class="form-control maxwidth-edit" id="speedlimit" type="number" value="{$shop->speedlimit()}">
 								</div>
 
 
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="connector">IP限制</label>
-									<input class="form-control" id="connector" type="number" value="{$shop->connector()}">
+									<input class="form-control maxwidth-edit" id="connector" type="number" value="{$shop->connector()}">
 								</div>
 							</div>
 						</div>
 					</div>
 
+					<div class="card">
+						<div class="card-main">
+							<div class="card-inner">
+								<div class="form-group form-group-label">
+									<label class="floating-label" for="content_extra">服务支持</label>
+									<input class="form-control maxwidth-edit" id="content_extra" type="text" value="{foreach $shop->content_extra() as $service}{$service[0]}-{$service[1]}{if $service@last}{else};{/if}{/foreach}">
+									<p class="form-control-guide">例：<code>check-全球节点分布;clear-快速客服响应</code>，减号左边为icon代号右边为文字,以;隔开</p>
+									<p class="form-control-guide">icon代号参阅：<a href="https://material.io/tools/icons/?icon=clear&style=baseline">Material-icon</a></p>
+								</div>
+							</div>
+						</div>
+					</div>
 
 					<div class="card">
 						<div class="card-main">
@@ -191,6 +203,11 @@
 				var auto_reset_bandwidth=0;
 			}
 
+			let contentExtra = $("#content_extra").val();
+			if (contentExtra=='' || contentExtra=='-') {
+                contentExtra = 'check-全球节点分布;check-快速客服响应;check-全平台客户端';
+			}
+
             $.ajax({
                 type: "PUT",
                 url: "/admin/shop/{$shop->id}",
@@ -205,10 +222,11 @@
                     connector: $("#connector").val(),
                     expire: $("#expire").val(),
                     class: $("#class").val(),
-										class_expire: $("#class_expire").val(),
-										reset: $("#reset").val(),
-										reset_value: $("#reset_value").val(),
-										reset_exp: $("#reset_exp").val(),
+					class_expire: $("#class_expire").val(),
+					reset: $("#reset").val(),
+					reset_value: $("#reset_value").val(),
+					reset_exp: $("#reset_exp").val(),
+					content_extra: contentExtra,
                 },
                 success: function (data) {
                     if (data.ret) {

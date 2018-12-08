@@ -1,14 +1,5 @@
 
-
-
-
 {include file='admin/main.tpl'}
-
-
-
-
-
-
 
 	<main class="content">
 		<div class="content-header ui-content-header">
@@ -18,27 +9,20 @@
 		</div>
 		<div class="container">
 			<div class="col-lg-12 col-md-12">
-				<section class="content-inner margin-top-no">
-					
+				<section class="content-inner margin-top-no">				
 					<div class="card">
 						<div class="card-main">
 							<div class="card-inner">
 								<div class="form-group form-group-label">
 									<label class="floating-label" for="content">内容</label>
-									<link rel="stylesheet" href="/theme/material/editor/css/editormd.min.css" />
+									<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/editor.md@1.5.0/css/editormd.min.css" />
 									<div id="editormd">
 										<textarea style="display:none;" id="content">{$ann->markdown}</textarea>
 									</div>
-								</div>
-								
-								
-								
-								
+								</div>							
 							</div>
 						</div>
-					</div>
-					
-					
+					</div>			
 					
 					<div class="card">
 						<div class="card-main">
@@ -57,26 +41,13 @@
 					
 					{include file='dialog.tpl'}
 
-			</div>
-			
-			
-			
+			</div>			
 		</div>
 	</main>
-
 	
-	
-	
-	
-
-
-
-
-
-
 {include file='admin/footer.tpl'}
 
-<script src="/theme/material/editor/editormd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/editor.md@1.5.0/editormd.min.js"></script>
 <script>
     $(document).ready(function () {
         function submit() {
@@ -114,7 +85,7 @@
 	
     $(function() {
         editor = editormd("editormd", {
-            path : "/theme/material/editor/lib/", // Autoload modules mode, codemirror, marked... dependents libs path
+             path : "https://cdn.jsdelivr.net/npm/editor.md@1.5.0/lib/", // Autoload modules mode, codemirror, marked... dependents libs path
 			height: 720,
 			saveHTMLToTextarea : true,
 			emoji : true
